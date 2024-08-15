@@ -1,6 +1,6 @@
 //server/src/service/historyService.ts
 import fs from "fs/promises";
-
+import * as uuid from "uuid";
 
 // TODO: Define a City class with name and id properties
 class City {
@@ -26,10 +26,7 @@ class HistoryService {
       const data = await fs.readFile(this.filePath, "utf-8");
       return JSON.parse(data) as City[];
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-        return []; // File doesn't exist yet, return an empty array
-      }
-      throw error;
+      return []; // File doesn't exist yet, return an empty array
     }
   }
 
@@ -50,7 +47,12 @@ class HistoryService {
   // async addCity(city: string) {}
   async addCity(city: string): Promise<void> {
     const cities = await this.read();
-    const id = new Date().getTime().toString();
+    
+    if (cities.find((currentCity) => currentCity.name.toLowerCase() === city.toLowerCase())) {
+      return;
+    }
+
+    const id = uuid.v4();
     const newCity = new City(id, city);
 
     cities.push(newCity);
